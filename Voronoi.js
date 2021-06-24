@@ -5,6 +5,12 @@
         var DrawButton = document.getElementById("DrawButton");
         var DelaunayButton = document.getElementById("DelaunayButton");
 
+        var FileButton = document.getElementById("file");
+        var Image;
+        var ImageSampling =  false;
+        var OffCanvas;
+
+
         var Canvas = document.getElementById("myCanvas");
         var Context = Canvas.getContext("2d");
 
@@ -59,10 +65,33 @@
             GetCursorPosition(e)
         })
 
+
+        if(FileButton)
+        {
+            FileButton.addEventListener('change', function(){
+                if(FileButton.files)
+                {
+                    Image = new Image;
+                    Image.onload = function()
+                    {
+                        Context.drawImage(Image,0,0);
+                        ImageSampling = true;
+                    }
+                    Image.src = URL.createObjectURL(FileButton.files[0]);
+                }
+                console.log("odorhaib");
+            })
+        }
+        else
+        {
+            console.log("help")
+        }
+
+
+
         function GetCursorPosition(event)
         {
             const RectangleBounds = Canvas.getBoundingClientRect();
-            //seems to be off
             X = event.clientX - RectangleBounds.left;
             Y = event.clientY - RectangleBounds.top;
 
@@ -114,10 +143,53 @@
             var ArrIndex = 0;
 
 
-            //use a for to generate an array of colors
-            for(SeedPoint in Seeds)
+            function HexCheck(Hex)
             {
-                Colors.push(Math.floor(Math.random()*16777215).toString(16));
+                if(Hex == "000")
+                {
+                    return "ffffff";
+                }
+                if(Hex.length != 2)
+                {
+                    return "0"+Hex;
+                }
+                else
+                {
+                    return Hex;
+                }
+            }
+
+            //use a for to generate an array of colors
+            for (let i = 0; i < Seeds.length; i++) 
+            {
+                const Seed = Seeds[i];
+            
+                if(ImageSampling)
+                {
+                    OffCanvas = document.createElement('canvas');
+                    OffCanvas.width = 256;
+                    OffCanvas.height = 256;
+                    OffCanvas.getContext('2d').drawImage(Image,0,0);
+                    var Pixel = OffCanvas.getContext('2d').getImageData(Seed.X,Seed.Y,1,1).data;
+                    //returning strings that are not always two characters
+                    if(Pixel[3]!=0)
+                    {
+                        console.log(Pixel[0]+Pixel[1]+Pixel[2]);
+                        console.log(Pixel[0].toString(16)+Pixel[1].toString(16)+Pixel[2].toString(16));
+                        console.log(HexCheck(Pixel[0].toString(16))+HexCheck(Pixel[1].toString(16))+HexCheck(Pixel[2].toString(16)));
+                        console.log("Alpha " + Pixel[3]);
+                        Colors.push(HexCheck(Pixel[0].toString(16))+HexCheck(Pixel[1].toString(16))+HexCheck(Pixel[2].toString(16)));
+                    }
+                    else
+                    {
+                        Colors.push("ffffff");
+                    }
+                }
+                else
+                {
+                    Colors.push(Math.floor(Math.random()*16777215).toString(16));
+                }
+               
             }
 
             for(i = 0; i < Canvas.height; i++)
@@ -316,3 +388,5 @@
                 }
             }
         }
+
+       
